@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useTaskStore } from '../store/taskStore';
-import { Plus, PlusCircle } from 'lucide-react';
+import { Plus, PlusCircle, Calendar } from 'lucide-react';
 
 export const TaskForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [dueDate, setDueDate] = useState('');
   const addTask = useTaskStore((state) => state.addTask);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -17,11 +18,13 @@ export const TaskForm = () => {
       description: description.trim(),
       priority,
       completed: false,
+      dueDate: dueDate ? new Date(dueDate) : undefined,
     });
 
     setTitle('');
     setDescription('');
     setPriority('medium');
+    setDueDate('');
   };
 
   return (
@@ -57,6 +60,19 @@ export const TaskForm = () => {
             placeholder="Add details..."
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
             rows={4}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <Calendar size={16} />
+            Due Date
+          </label>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
 
