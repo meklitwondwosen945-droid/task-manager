@@ -36,6 +36,7 @@ function taskMarkup(task) {
   remove.type = "button";
   remove.className = "task-item__remove";
   remove.textContent = "Delete";
+  remove.setAttribute("aria-label", `Remove ${task.title}`);
 
   left.append(checkbox, text);
   item.append(left, remove);
