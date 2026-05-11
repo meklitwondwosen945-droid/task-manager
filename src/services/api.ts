@@ -1,6 +1,7 @@
 import { Task } from '../types';
+import { config } from '../config';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `${config.apiUrl}/api`;
 
 export const taskAPI = {
   // Get all tasks
