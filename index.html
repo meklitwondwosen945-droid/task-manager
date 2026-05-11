@@ -13,9 +13,9 @@
         <input id="task-input" type="text" placeholder="Add a task" maxlength="120" required />
         <button type="submit">Add</button>
       </form>
-      <ul id="task-list" class="task-list" aria-live="polite"></ul>
+      <ul id="task-list" class="task-list"></ul>
       <footer class="task-footer">
-        <span id="remaining-count">0 tasks left</span>
+        <span id="remaining-count" aria-live="polite">0 tasks left</span>
         <button id="clear-completed" type="button">Clear completed</button>
       </footer>
     </main>

@@ -18,7 +18,15 @@ function taskMarkup(task) {
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.checked = task.completed;
-  checkbox.setAttribute("aria-label", `Mark ${task.title} complete`);
+
+  function updateCheckboxLabel(completed) {
+    checkbox.setAttribute(
+      "aria-label",
+      completed ? `Mark ${task.title} incomplete` : `Mark ${task.title} complete`
+    );
+  }
+
+  updateCheckboxLabel(task.completed);
 
   const text = document.createElement("span");
   text.className = "task-item__text";
@@ -40,6 +48,7 @@ function taskMarkup(task) {
 
     checkbox.checked = updated.completed;
     item.classList.toggle("completed", updated.completed);
+    updateCheckboxLabel(updated.completed);
     updateRemainingCount();
   });
 
