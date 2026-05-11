@@ -21,6 +21,7 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
           type="button"
           onClick={() => onChange('')}
           className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Clear search"
         >
           <X size={20} />
         </button>

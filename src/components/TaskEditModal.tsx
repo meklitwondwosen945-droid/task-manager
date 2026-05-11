@@ -52,6 +52,7 @@ export const TaskEditModal = ({ task, isOpen, onClose }: TaskEditModalProps) => 
               type="button"
               onClick={onClose}
               className="p-2 hover:bg-white/20 rounded-lg transition-all"
+              aria-label="Close modal"
             >
               <X size={24} />
             </button>
@@ -88,10 +89,11 @@ export const TaskEditModal = ({ task, isOpen, onClose }: TaskEditModalProps) => 
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="edit-due-date" className="block text-sm font-semibold text-gray-700 mb-2">
               Due Date
             </label>
             <input
+              id="edit-due-date"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}

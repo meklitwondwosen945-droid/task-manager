@@ -59,8 +59,9 @@ export const TaskList = () => {
 
         <div className="flex items-center gap-2 mb-4">
           <ArrowUpDown size={16} className="text-gray-500" />
-          <span className="text-sm text-gray-600 font-medium">Sort by:</span>
+          <label htmlFor="sort-select" className="text-sm text-gray-600 font-medium">Sort by:</label>
           <select
+            id="sort-select"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'date' | 'priority' | 'title')}
             className="text-sm px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

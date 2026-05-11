@@ -73,6 +73,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               type="button"
               onClick={onClose}
               className="p-2 hover:bg-white/20 rounded-lg transition-all"
+              aria-label="Close settings"
             >
               <X size={24} />
             </button>

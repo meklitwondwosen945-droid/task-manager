@@ -64,11 +64,12 @@ export const TaskForm = () => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-            <Calendar size={16} />
+          <label htmlFor="task-due-date" className="block text-sm font-semibold text-gray-700 mb-2">
+            <Calendar size={16} className="inline mr-2" />
             Due Date
           </label>
           <input
+            id="task-due-date"
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
