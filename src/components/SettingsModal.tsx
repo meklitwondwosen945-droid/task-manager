@@ -8,10 +8,11 @@ interface SettingsModalProps {
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const tasks = useTaskStore((state) => state.tasks);
+  const addTask = useTaskStore((state) => state.addTask);
 
   if (!isOpen) return null;
 
-  const handleExportTasks = () => {
+  const handleExportJSON = () => {
     const dataStr = JSON.stringify(tasks, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -22,7 +23,37 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleImportTasks = () => {
+  const handleExportCSV = () => {
+    // CSV Header
+    const headers = ['Title', 'Description', 'Priority', 'Completed', 'Created Date', 'Due Date'];
+    
+    // CSV Rows
+    const rows = tasks.map(task => [
+      `"${task.title.replace(/"/g, '""')}"`,
+      `"${task.description.replace(/"/g, '""')}"`,
+      task.priority,
+      task.completed ? 'Yes' : 'No',
+      new Date(task.createdAt).toISOString(),
+      task.dueDate ? new Date(task.dueDate).toISOString() : ''
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `taskflow-tasks-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportJSON = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
@@ -33,11 +64,71 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         reader.onload = (event) => {
           try {
             const importedTasks = JSON.parse(event.target?.result as string);
-            // You would need to add an importTasks method to your store
-            console.log('Import tasks:', importedTasks);
-            alert('Import feature coming soon!');
+            if (Array.isArray(importedTasks)) {
+              importedTasks.forEach(task => {
+                addTask({
+                  title: task.title,
+                  description: task.description || '',
+                  priority: task.priority || 'medium',
+                  completed: task.completed || false,
+                  dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+                });
+              });
+              alert(`Successfully imported ${importedTasks.length} tasks!`);
+              onClose();
+            } else {
+              alert('Invalid JSON format. Expected an array of tasks.');
+            }
           } catch (error) {
-            alert('Invalid file format');
+            alert('Invalid JSON file format');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  };
+
+  const handleImportCSV = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const csvContent = event.target?.result as string;
+            const lines = csvContent.split('\n');
+            
+            // Skip header row
+            const dataLines = lines.slice(1).filter(line => line.trim());
+            
+            let importCount = 0;
+            dataLines.forEach(line => {
+              // Parse CSV line (handle quoted fields)
+              const matches = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g);
+              if (matches && matches.length >= 4) {
+                const [title, description, priority, completed, createdDate, dueDate] = matches.map(
+                  field => field.replace(/^"|"$/g, '').replace(/""/g, '"')
+                );
+
+                addTask({
+                  title: title || 'Untitled Task',
+                  description: description || '',
+                  priority: (priority?.toLowerCase() as 'low' | 'medium' | 'high') || 'medium',
+                  completed: completed?.toLowerCase() === 'yes',
+                  dueDate: dueDate ? new Date(dueDate) : undefined,
+                });
+                importCount++;
+              }
+            });
+
+            alert(`Successfully imported ${importCount} tasks from CSV!`);
+            onClose();
+          } catch (error) {
+            alert('Error parsing CSV file. Please check the format.');
           }
         };
         reader.readAsText(file);
@@ -95,35 +186,69 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
             </div>
           </div>
 
-          {/* Data Management */}
+          {/* Export Section */}
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-3">Data Management</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-3">Export Tasks</h3>
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={handleExportTasks}
+                onClick={handleExportJSON}
                 className="w-full flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 border border-green-200 rounded-xl transition-all text-left"
               >
                 <div className="p-2 bg-green-500 text-white rounded-lg">
                   <Download size={20} />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">Export Tasks</p>
-                  <p className="text-sm text-gray-600">Download your tasks as JSON</p>
+                  <p className="font-semibold text-gray-800">Export as JSON</p>
+                  <p className="text-sm text-gray-600">Download tasks with full data</p>
                 </div>
               </button>
 
               <button
                 type="button"
-                onClick={handleImportTasks}
+                onClick={handleExportCSV}
+                className="w-full flex items-center gap-3 p-4 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all text-left"
+              >
+                <div className="p-2 bg-emerald-500 text-white rounded-lg">
+                  <Download size={20} />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">Export as CSV</p>
+                  <p className="text-sm text-gray-600">Download for Excel/Sheets</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Import Section */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-3">Import Tasks</h3>
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={handleImportJSON}
                 className="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-all text-left"
               >
                 <div className="p-2 bg-blue-500 text-white rounded-lg">
                   <Upload size={20} />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">Import Tasks</p>
-                  <p className="text-sm text-gray-600">Upload tasks from JSON file</p>
+                  <p className="font-semibold text-gray-800">Import from JSON</p>
+                  <p className="text-sm text-gray-600">Upload JSON backup file</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleImportCSV}
+                className="w-full flex items-center gap-3 p-4 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 rounded-xl transition-all text-left"
+              >
+                <div className="p-2 bg-cyan-500 text-white rounded-lg">
+                  <Upload size={20} />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">Import from CSV</p>
+                  <p className="text-sm text-gray-600">Upload CSV file from Excel/Sheets</p>
                 </div>
               </button>
             </div>
